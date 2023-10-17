@@ -40,15 +40,21 @@ def generate_passphrase() -> str:
 
 
 def get_random_meme_link() -> str:
-    images_list = imgur_client.get_album_images("NbhcNZo")
-    image = choice(images_list)
-    return image.link
+    try:
+        images_list = imgur_client.get_album_images("NbhcNZo")
+        image = choice(images_list)
+        return image.link
+    except:
+        return "static\errors\error_img.png"
 
 
 def get_random_video_meme_link() -> str:
-    videos_list = imgur_client.get_album_images("c2YLLz3")
-    video = choice(videos_list)
-    return video.link
+    try:
+        videos_list = imgur_client.get_album_images("c2YLLz3")
+        video = choice(videos_list)
+        return video.link
+    except:
+        return "static\errors\error_vid.mp4"
 
 
 # Commands
