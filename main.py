@@ -3,17 +3,15 @@
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 import config
-
 import logging
 import coloredlogs
 import locale
 from datetime import datetime
 from secrets import token_urlsafe
 from random import sample, choice
-
 from imgurpython import ImgurClient
 
-# Imgur Client
+# Imgur API Client
 imgur_client = ImgurClient(config.CLIENT_ID, config.CLIENT_SECRET, config.ACCESS_TOKEN, config.REFRESH_TOKEN)
 
 # Logs
@@ -58,33 +56,32 @@ def get_random_video_meme_link() -> str:
 
 
 # Commands
-async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text("¡Hola! Soy Friday, para saber que puedo hacer usa /help")
 
 
-async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    text = """Ayuda del bot:
-            \n/pass - Genera una contraseña aleatoria
-            \n/passphrase - Genera una contraseña de frases aleatoria
-            \n/meme - Envía un meme aleatorio de una colección del bot
-            \n/vidmeme - Envía un videomeme aleatorio de una colección del bot
-           """
+async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    text = "Ayuda del bot:\n"\
+            "/pass - Genera una contraseña aleatoria\n"\
+            "/passphrase - Genera una contraseña de frases aleatoria\n"\
+            "/meme - Envía un meme aleatorio de una colección del bot\n"\
+            "/vidmeme - Envía un videomeme aleatorio de una colección del bot"
     await update.message.reply_text(text)
 
 
-async def pass_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def pass_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_markdown_v2(f"```{generate_pass()}```")
 
 
-async def passphrase_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def passphrase_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_markdown_v2(f"```{generate_passphrase()}```")
 
 
-async def random_memes_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def random_memes_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_photo(get_random_meme_link())
 
 
-async def random_video_memes_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def random_video_memes_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_video(get_random_video_meme_link())
 
 
@@ -93,10 +90,10 @@ def handle_response(text: str) -> str:
     lower_text: str = text.lower()
     if "hola" in lower_text:
         return "Hey"
-
+    
     if "que tal" in lower_text:
         return "Muy Bien!!"
-
+    
     if "adios" in lower_text:
         return "Chaoo"
     
@@ -105,15 +102,15 @@ def handle_response(text: str) -> str:
     
     if "¿que hora es?" in lower_text:
         return f"Son las {str(datetime.utcnow().strftime('%H:%M'))}"
-
+    
     return "No te he entendido... (Prueba a utilizar /help)"
 
 
-async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     message_type: str = update.message.chat.type
     text: str = update.message.text
 
-    logging.info(f"User ({update.message.chat.id}) in {message_type}: \"{text}\"")
+    logging.info("User (%s) in %s: \"%s\"" % (update.message.chat.id, message_type, text))
 
     if message_type == "group":
         if config.BOT_USERNAME in text:
@@ -124,15 +121,16 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         response: str = handle_response(text)
 
-    logging.info(f"Bot: {response}")
+    logging.info("Bot: %s" % response)
     await update.message.reply_text(response)
 
 
-async def error(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    logging.error(f"Update {update} causó un error {context.error}")
+async def error(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    logging.error("Update %s causó un error %s" % (update, context.error))
 
 
-if __name__ == "__main__":
+def main() -> None:
+    ''' Main function (Starts the bot, set all handlers and polls it) '''
     app = Application.builder().token(config.BOT_TOKEN).build()
 
     # Commands
@@ -151,3 +149,7 @@ if __name__ == "__main__":
 
     # Polls the bot
     app.run_polling(poll_interval=3.0, read_timeout=30)
+
+
+if __name__ == "__main__":
+    main()
