@@ -2,6 +2,7 @@
 
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
+from telegram.constants import ParseMode
 import config
 import logging
 import coloredlogs
@@ -38,26 +39,20 @@ def generate_passphrase() -> str:
 
 
 def get_random_meme_link() -> str:
-    try:
-        images_list = imgur_client.get_album_images("NbhcNZo")
-        image = choice(images_list)
-        return image.link
-    except:
-        return "static\errors\error_img.png"
+    images_list = imgur_client.get_album_images("NbhcNZo")
+    image = choice(images_list)
+    return image.link
 
 
 def get_random_video_meme_link() -> str:
-    try:
-        videos_list = imgur_client.get_album_images("c2YLLz3")
-        video = choice(videos_list)
-        return video.link
-    except:
-        return "static\errors\error_vid.mp4"
+    videos_list = imgur_client.get_album_images("c2YLLz3")
+    video = choice(videos_list)
+    return video.link
 
 
 # Commands
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.message.reply_text("¡Hola! Soy Friday, para saber que puedo hacer usa /help")
+    await update.message.reply_text(f"¡Hola {update.effective_user.username}! Soy Friday, para saber que puedo hacer usa /help")
 
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -78,11 +73,21 @@ async def passphrase_command(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
 
 async def random_memes_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.message.reply_photo(get_random_meme_link())
+    try:
+        await update.message.reply_photo(get_random_meme_link())
+    except:
+        await update.message.reply_photo("static\errors\error_img.png", 
+                                         caption="Ha ocurrido un error obteniendo el meme de la colección <b>(Por favor intentalo más tarde)</b>",
+                                         parse_mode=ParseMode.HTML)
 
 
 async def random_video_memes_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.message.reply_video(get_random_video_meme_link())
+    try:
+        await update.message.reply_video(get_random_video_meme_link())
+    except:
+        await update.message.reply_video("static\errors\error_vid.mp4",
+                                         caption="Ha ocurrido un error obteniendo el vídeo de la colección <b>(Por favor intentalo más tarde)</b>",
+                                         parse_mode=ParseMode.HTML)
 
 
 # Responses
